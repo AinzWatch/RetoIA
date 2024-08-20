@@ -1,1 +1,1 @@
-Esta carpeta es en donde esta el Challenge tanto como el .iphy y el pdf
+Esta carpeta es en donde esta el Challenge tanto como el .iphy y el pdf, son las actividades de la tarea Momento de Retroalimentación: Módulo 2 Implementación de una técnica de aprendizaje máquina sin el uso de un framework. (Portafolio Implementación)
