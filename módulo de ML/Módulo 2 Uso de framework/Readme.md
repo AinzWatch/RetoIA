@@ -1,1 +1,1 @@
-
+Se incluyen dos archivos, el .Jupyter Notebook. y el PDF, el Jupyter Notebook incluye el codigo comentado, en donde se puede ejecutar el analisis usando framework, por otra parte el pdf incluye las graficas y los resultados del mismo.
