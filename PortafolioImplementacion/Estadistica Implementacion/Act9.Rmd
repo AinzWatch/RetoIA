@@ -1,0 +1,376 @@
+---
+title: "9. ANOVA"
+author: "Eliezer Cavazos"
+date: "2024-08-27"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Problema 1
+
+Resuelve las dos partes del problema "El rendimiento". Se encuentra en los apoyos de clase de "ANOVA". Para ello se te recomienda que sigas los siguientes pasos
+
+```{r}
+calificacion=c(10,7,9,9,9,10,5,7,6,6,8,4,2,6,3,5,5,3,9,7,8,8,10,6,8,3,5,6,7,7,2,6,2,1,4,3)
+metodo=c(rep("M1",6),rep("M2",6),rep("M3",6),rep("M1",6),rep("M2",6),rep("M3",6))
+sexo = c(rep("h", 18), rep("m",18))
+metodo = factor(metodo)
+sexo = factor(sexo)
+
+data = data.frame(calificacion, metodo, sexo)
+```
+
+### Análisis exploratorio. Calcula la media para el rendimiento por método de enseñanza.
+
+Consulta el código en R en los apoyos de clase de "ANOVA"
+
+#### Haz el boxplot de la evaluación de los estudiantes por método de enseñanza y sexo.
+
+```{r}
+boxplot(calificacion ~ metodo:sexo,data, col = 2:8, horizontal=TRUE)
+abline(v = mean(calificacion), lty = 3, col = "red")
+```
+#### Interpreta el resultado desde la perspectiva estadística y en el contexto del problema.
+
+El resultado muestra que el Metodo 1 tiende estar arriba de la media con hombres y mujeres, El Metodo 2 queda en la media y el Metodo 3 tiende a estar abajo de la media de calificacion.
+
+#### Escribe tus conclusiones parciales
+
+Viendo el Boxplot podemos ver que de los 3 metodos el Metodo 1 Incrementa la Calificacion, el Metodo 2 queda en la media y el Metodo 3 es el que más decrece, viendo esto en el contexto del problema lo que nosotros queremos saber es que Metodo es el que más le ayuda a los alumnos y podemos identificar el Metodo 1 es el metodo de los 3
+
+### Las hipótesis. Establece las hipótesis estadísticas (tienen que ser 3).
+
+F1:Metodo de enseñanza
+F2: Sexo
+
+$Y_{ijk} = \mu + T_i + a_j + T_ia_j + E_{ijk}  $
+
+Primera Hipótesis:
+$H_0: T_i = 0$
+$H_1: $ algún $T_i$ es distinto de 0
+
+Segunda Hipótesis:
+$H_0: a_j = 0$
+$H_1: $ algún $a_j$ es distinto de 0
+
+Tercera Hipótesis Interaccion:
+$H_0: T_ia_j = 0$
+$H_1: $ algún $T_ia_j$ es distinto de 0
+
+### Realiza el ANOVA para dos niveles con interacción:
+
+#### Haz la gráfica de interacción de dos factores en ANOVA
+
+```{r}
+A<-aov(calificacion~metodo*sexo,data)
+summary(A)
+interaction.plot(metodo,sexo,calificacion)
+interaction.plot(sexo, metodo, calificacion)
+```
+
+#### Haz el boxplot para visualizar la interacción de los factores, por ejemplo, peso por dieta interacción ejercicio:
+```{r}
+boxplot(calificacion ~ metodo*sexo, data = data, col = c("lightblue", "lightgreen"), main = "Boxplot de Metodo por Sexo")
+```
+
+
+#### Interpreta el resultado desde la perspectiva estadística y en el contexto del problema
+
+El Resultado muestra que la interaccion tiene poca significacion en los resultados de las calificaciones
+
+#### Escribe tus conclusiones parciales
+
+La interaccion resulto NO SIGNIFICATIVA, ya que el valor F es muy bajo eso significa que no es significativo para las calificaciones, por eso rechazamos tambien la Tercera Hipotesis, ya que no nos va a funcionar la Interaccion de las dos variables
+
+### Realiza el ANOVA para dos niveles sin interacción.
+Consulta el código de R en los apoyos de clase de "ANOVA"
+#### Haz el boxplot de rendimiento por sexo. Calcula la media para el rendimiento por sexo y método.
+```{r}
+B<-aov(calificacion~metodo+sexo)
+summary(B)
+
+print("Media de Calificacion por Sexo y Metodo")
+
+tapply(calificacion,sexo,mean)
+tapply(calificacion,metodo,mean)
+M=mean(calificacion)
+M
+boxplot(calificacion ~ sexo)
+```
+
+#### Haz los intervalos de confianza de rendimiento por sexo. Grafícalos
+
+```{r}
+
+C<-aov(calificacion~sexo)
+summary(C)
+tapply(calificacion,sexo,mean)
+mean(calificacion)
+boxplot(calificacion ~ sexo)
+
+
+
+I = TukeyHSD(aov(calificacion ~ sexo))
+I
+plot(I) #Los intervalos de confianza se observan mejor si se grafican
+
+```
+
+
+#### Interpreta el resultado desde la perspectiva estadística y en el contexto del problema.
+
+El Sexo tiene una baja significacncia en el resultado de las calificaciones
+
+#### Escribe tus conclusiones parciales
+
+Podemos ver que el Sexo tampoco es tan significativo para las Calificaciones, la diferencia es muy pequeña pero igual se puede identificar que dependiendo del Metodo los dos sexos tendran una mejor calificacion.
+
+### Realiza el ANOVA para un efecto principal
+Consulta el código de R en los apoyos de clase de "ANOVA"
+#### Haz el boxplot de rendimiento por método de enseñanza. Calcula la media.
+```{r}
+boxplot(calificacion ~ metodo)
+
+B<-aov(calificacion~metodo)
+summary(B)
+
+print("Media de Calificacion por Metodo")
+
+tapply(calificacion,metodo,mean)
+
+```
+
+#### Haz los intervalos de confianza de rendimiento por método. Grafícalos
+```{r}
+
+C<-aov(calificacion~metodo)
+summary(C)
+tapply(calificacion,metodo,mean)
+mean(calificacion)
+boxplot(calificacion ~ metodo)
+
+```
+#### Realiza la prueba de  comparaciones múltiples de Tukey. Grafica los intervalos de confianza de Tukey. 
+```{r}
+I = TukeyHSD(aov(calificacion ~ metodo))
+I
+plot(I) #Los intervalos de confianza se observan mejor si se grafican
+
+```
+
+#### Interpreta el resultado desde la perspectiva estadística y en el contexto del problema.
+
+El efecto principal que afecta la media de las Calificaciones es el Metodo de aprendizaje
+
+#### Escribe tus conclusiones parciales
+
+Podemos identificar que le metodo de aprendizaje SI es significativo para las Calificaciones, donde sin importar el sexo termina teniendo un mejor resultado
+
+
+#### Comprueba la validez del modelo. Comprueba:
+- Normalidad
+- Homocedasticidad
+- Independencia
+- Relación lineal entre las variables (coeficiente de determinación).
+```{r}
+anova = aov(calificacion~metodo)
+
+residuos= anova$residuals
+#qqnorm(residuos)
+#qqline(residuos)
+
+
+plot(anova$fitted.values,anova$residuals,ylab="Errores",xlab="Valores estimados")
+abline(h=0,col="red")
+
+#n = tapply(calificacion, metodo, length)
+#plot(c(1:sum(n)),anova$residuals,xlab="Orden de la observación",ylab="Residuos")
+#abline(h=0,col="red")
+
+
+plot(lm(calificacion~metodo))
+CD= 150/(150+76) #coeficiente dedeterminación para el modelo.
+
+
+summary(lm(calificacion~metodo))$r.squared
+```
+
+
+### Concluye en el contexto del problema.
+
+Con estos resultado podemos identificar que si existe una influencia de la metodologia que afecta el promedio de las calificaciones de los alumnos, el genero tambien tiene un pequeño cambio en las calificaciones pero es más significativo la metodologia, ademas la mejora Metodologia si se quiere que los alumnos mejores sus calificaciones es el Metodo 1
+
+
+## Problema 2 Vibracion de Motores
+```{r}
+vibracion=c(13.1,13.2,15,14.8,14,14.3,16.3,15.8,15.7,16.4,17.2,16.7,13.7,14.3,13.9,14.3,12.4,12.3,15.7,15.8,13.7,14.2,14.4,13.9,13.5,12.5,13.4,13.8,13.2,13.1)
+proveedor=c(rep("1",6),rep("2",6),rep("3",6),rep("4",6),rep("5",6))
+material=c(rep("Acero",2),rep("Aluminio",2),rep("Plastico",2))
+#material = c(rep("h", 18), rep("m",18))
+material = factor(material)
+proveedor = factor(proveedor)
+
+data = data.frame(vibracion, proveedor, material)
+
+```
+#### Haz el boxplot de la evaluación de los motores por Proveedor y Material.
+```{r}
+boxplot(vibracion ~ proveedor:material ,data, col = 2:5, horizontal=TRUE)
+abline(v = mean(vibracion), lty = 3, col = "red")
+```
+#### Interpreta el resultado desde la perspectiva estadística y en el contexto del problema.
+
+Con el boxplot podemos identificar que la mayoria de datos se encuentran abajo de la media 
+
+#### Escribe tus conclusiones parciales
+
+Por el moemnto no se puede decir mucho más que el proveedor puede que tenga cierto significado sobre las vibraciones pero se ocupa un poco más de informacion para sacar conclusiones
+
+
+### Las hipótesis. Establece las hipótesis estadísticas (tienen que ser 3).
+
+F1: Material
+F2: Proveedor
+
+$Y_{ijk} = \mu + T_i + a_j + T_ia_j + E_{ijk}  $
+
+Primera Hipótesis:
+$H_0: T_i = 0$
+$H_1: $ algún $T_i$ es distinto de 0
+
+Segunda Hipótesis:
+$H_0: a_j = 0$
+$H_1: $ algún $a_j$ es distinto de 0
+
+Tercera Hipótesis Interaccion:
+$H_0: T_ia_j = 0$
+$H_1: $ algún $T_ia_j$ es distinto de 0
+
+
+#### Haz la gráfica de interacción de dos factores en ANOVA
+
+```{r}
+A<-aov(vibracion~material*proveedor,data)
+summary(A)
+
+interaction.plot(data$material,data$proveedor,data$vibracion)
+interaction.plot(data$proveedor, data$material, data$vibracion)
+```
+#### Interpreta el resultado desde la perspectiva estadística y en el contexto del problema
+
+Despues de sacar nuestras hipotesis y sacar la interaccion de las dos variables podemos ver que no es muy significativo los dos valores juntos como usar solo Proovedor
+
+#### Escribe tus conclusiones parciales
+
+Por el momento podemos identificar con el valor de F que el Proveedor individual de la variable de material es mas significativo que la interaccion de ambos.
+
+### Realiza el ANOVA para dos niveles sin interacción.
+
+#### Haz el boxplot de vibracion por proveedor Calcula la media para el vibracion por proveedor y material
+```{r}
+B<-aov(data$vibracion~data$material+data$proveedor)
+summary(B)
+
+print("Media de Vibracion por Material y Proveedor")
+
+tapply(data$vibracion,data$proveedor,mean)
+tapply(data$vibracion,data$material,mean)
+M=mean(data$vibracion)
+M
+boxplot(vibracion ~ proveedor)
+```
+#### Haz los intervalos de confianza de rendimiento por Proveedor. Grafícalos
+
+```{r}
+
+C<-aov(data$vibracion~data$proveedor)
+summary(C)
+tapply(data$vibracion,data$proveedor,mean)
+mean(data$vibracion)
+boxplot(data$vibracion ~ data$proveedor)
+I = TukeyHSD(aov(data$vibracion ~ data$proveedor))
+I
+plot(I) #Los intervalos de confianza se observan mejor si se grafican
+
+```
+
+#### Interpreta el resultado desde la perspectiva estadística y en el contexto del problema.
+
+Podemos identificar que el valor de F tiene un valor muy significativo cuando se trata del proveedor, aun falta verificar los datos con Material pero por el momento se puede decir que el Proveedor es la mayor causa de las vibraciones.
+
+#### Escribe tus conclusiones parciales
+
+La mayor causa de las vibraciones es el proveedor hasta el momento ya que la cantidad de vibraciones cambia en base al proveedor principalmente.
+
+#### Haz el boxplot de vibracion por material. Calcula la media.
+```{r}
+boxplot(data$vibracion ~ data$material)
+
+B<-aov(data$vibracion~data$material)
+summary(B)
+
+print("Media de Vibracion por Material")
+
+tapply(data$vibracion,data$material,mean)
+
+```
+
+#### Haz los intervalos de confianza de rendimiento por método. Grafícalos
+```{r}
+
+C<-aov(data$vibracion~data$material)
+summary(C)
+tapply(data$vibracion,data$material,mean)
+mean(data$vibracion)
+boxplot(data$vibracion ~ data$material)
+
+```
+#### Realiza la prueba de  comparaciones múltiples de Tukey. Grafica los intervalos de confianza de Tukey. 
+```{r}
+I = TukeyHSD(aov(data$vibracion ~ data$material))
+I
+plot(I) #Los intervalos de confianza se observan mejor si se grafican
+
+```
+
+#### Interpreta el resultado desde la perspectiva estadística y en el contexto del problema.
+
+Despues de estudiar más el uso de los materiales con sus vibraciones podemos identificar que no es muy significativo para ser la causa de las vibraciones y podemos confirmar que la mayor causa de las vibraciones de los motores es el proveedor
+
+#### Escribe tus conclusiones parciales
+
+Los materiales no son muy significativos para ser la causa de las vibraciones de los motores electricos.
+
+### Comprueba la validez del modelo. Comprueba:
+- Normalidad
+- Homocedasticidad
+- Independencia
+- Relación lineal entre las variables (coeficiente de determinación).
+```{r}
+anova = aov(data$vibracion~data$proveedor)
+
+residuos= anova$residuals
+#qqnorm(residuos)
+#qqline(residuos)
+
+
+plot(anova$fitted.values,anova$residuals,ylab="Errores",xlab="Valores estimados")
+abline(h=0,col="red")
+
+#n = tapply(calificacion, metodo, length)
+#plot(c(1:sum(n)),anova$residuals,xlab="Orden de la observación",ylab="Residuos")
+#abline(h=0,col="red")
+
+
+plot(lm(data$vibracion~data$proveedor))
+CD= 150/(150+76) #coeficiente dedeterminación para el modelo.
+
+
+```
+### Concluye en el contexto del problema.
+
+En el contexto del problema se puede identificar que la mayor causa de las vibraciones de los motores electricos depende del Proveedor. Especificamente con los productos del Proveedor 2 las vibraciones de los motores electricos aumenta.

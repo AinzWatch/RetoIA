@@ -1,0 +1,354 @@
+---
+title: "12. Regresión Lineal - Análisis de los errores"
+author: "Eliezer Cavazos"
+date: "2024-08-30"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+	
+Analiza la base de datos de estatura y peso de los hombres y mujeres en México y obten el mejor modelo de regresión para esos datos.
+
+```{r}
+oPesoEstatura = read.csv("C:\\Users\\eliez\\OneDrive\\Desktop\\Clases\\Estatura-peso_HyM.csv") #leer la base de datos
+
+oMujeres = subset(oPesoEstatura,oPesoEstatura$Sexo=="M")
+oHombres = subset(oPesoEstatura,oPesoEstatura$Sexo=="H")
+
+M1=data.frame(oHombres$Estatura,oHombres$Peso,oMujeres$Estatura,oMujeres$Peso)
+
+```
+
+
+# La recta de mejor ajuste (Primera entrega)
+
+## Analisis Descriptivo
+### Obtén la matriz de correlación de los datos que se te proporcionan. Interpreta.
+
+```{r}
+
+cor(M1)
+
+```
+
+
+### Obtén medidas (media, desviación estándar, etc) que te ayuden a analizar los datos.
+```{r}
+n=4 #número de variables
+d=matrix(NA,ncol=7,nrow=n)
+for(i in 1:n){
+  d[i,]<-c(as.numeric(summary(M1[,i])),sd(M1[ ,i]))
+}
+m=as.data.frame(d)
+row.names(m)=c("H-Estatura","H-Peso","M-Estatura","M-Peso")
+names(m)=c("Minimo","Q1","Mediana","Media","Q3","Máximo","Desv Est")
+m
+```
+
+**boxplot**
+
+## La recta de mejor ajuste
+### Encuentra la ecuación de regresión de mejor ajuste:
+
+Hombres:
+```{r}
+ModeloHombres = lm(oHombres$Peso ~ oHombres$Estatura, oHombres)
+
+ModeloHombres
+summary(ModeloHombres)
+```
+Hipotesis:
+- $H_0: \beta_1 = 0$
+- $H_1: \beta_1 \neq 0$
+
+Mujeres:
+```{r}
+ModeloMujeres = lm(oMujeres$Peso ~ oMujeres$Estatura, oMujeres)
+ModeloMujeres
+summary(ModeloMujeres)
+```
+
+
+### Realiza la regresión entre las variables involucradas
+
+Hipotesis:
+- $H_0: \beta_1 = 0$
+- $H_1: \beta_1 \neq 0$
+
+
+Hombres:
+```{r}
+plot(oHombres$Estatura, oHombres$Peso, col="blue", main="Estatus vs Peso Hombres")
+abline(ModeloHombres, col="red")
+
+```
+
+Mujeres:
+```{r}
+plot(oMujeres$Estatura, oMujeres$Peso, col="pink2",main="Estatus vs Peso Mujeres")
+abline(ModeloMujeres, col="red")
+
+```
+
+## Verificacion del modelo:
+### Verifica la significancia del modelo con un alfa de 0.03.
+### Verifica la significancia de β̂i con un alfa de 0.03.
+### Verifica el porcentaje de variación explicada por el modelo
+
+Hombres: 
+```{r}
+Modelo2 = lm(Peso~Estatura+Sexo, oPesoEstatura)
+
+summary(Modelo2)
+```
+```{r}
+iNModelo2 = length(Modelo2)
+abs( qt(0.03/2,(iNModelo2-2)) )
+```
+
+A 0.05 si es significativo y los modelos quedarian:
+
+Mujeres:
+Estatura = -72.56 + 81.15E
+Estatura = -74.7546 + 89.2604E + -10.5645SexoM
+Estatura = -85.3191 + 0.0052296E
+
+Hombres:
+Estatura = -72.56 + 81.15E
+Estatura = -74.7546 + 89.2604E + -10.5645SexoM
+Estatura = -74.7546 + 89.2604E
+
+### Dibuja el diagrama de dispersión de los datos y la recta de mejor ajuste.
+```{r}
+
+b0 = Modelo2$coefficients[1]
+b1 = Modelo2$coefficients[2]
+b2 = Modelo2$coefficients[3]
+
+Ym = function(x){b0+b2+b1*x} #1.2848 + 0.0052296P
+Yh = function(x){b0+b1*x} # 1.2727097 + 0.0052296P
+colores = c("blue", "pink2")
+plot(oPesoEstatura$Estatura,oPesoEstatura$Peso, data=oPesoEstatura, col=colores[factor(oPesoEstatura$Sexo)],pch=19, ylab="Peso", xlab="Estatura", main="Relacion Peso vs Estatura")
+
+x = seq(1.40,1.80,0.01)
+lines(x, Ym(x), col="pink2", lwd=2)
+lines(x, Yh(x), col="blue", lwd=2)
+```
+
+
+### Interpreta en el contexto del problema cada uno de los análisis que hiciste.
+En los anlisis se identifico la relacion del Peso por Estatura tanto en Hombres como Mujeres para poder generar un modelo de regresión lineal y asi poder realizar predicciones para identificar Peso por Estatura
+### Interpreta en el contexto del problema:
+### ¿Qué información proporciona β̂0 sobre la relación entre la estatura y el peso de hombres y mujeres?
+B_0 nos da el valor de Peso cuando la Estatura es 0 y el Sexo es una mujer, aunque esto no tiene mucho sentido cuando la estatura es 0 ya que el modelo esta entrenado sobre estatura mayores a 1.45, con esto dicho no signifique que este mal, solo que al momento de hacer una prediccion dara un mejor resultado mientras la estatura este dentro de un valor "real"/aproximado.
+### ¿Cómo interpretas β̂1 en la relación entre la estatura y el peso de hombres y mujeres?
+B_1 va a ser el valor que se va a estar sumando(restando en el caso de la formula que tenemos) al valor de B_0 para dar el peso indicado B_1 es tambien multiplicado por la Estatura, ya que siguiendo los datos mientras más Estatura en promedio el peso tambien debe aumentar.
+
+
+## 2. Propón un nuevo modelo. Esta vez toma en cuenta la interacción de la Estatura con el Sexo y realiza los mismos pasos que hiciste con los modelos anteriores:
+```{r}
+oModeloNuevo = lm(Peso~Estatura*Sexo, oPesoEstatura)
+summary(oModeloNuevo)
+```
+
+### 2.1 Obtén el modelo e interpreta las variables Dummy
+### 2.2 Significancia del modelo:
+#### 2.2.1 Valida la significancia del modelo con un alfa de 0.03 (incluye las hipótesis que pruebas)
+
+```{r}
+iNModeloNuevo = length(oModeloNuevo)
+
+abs( qt(0.03/2,(iNModeloNuevo-2)) )
+oModeloNuevo$coefficients
+```
+
+
+A 0.03 no es es significativo y los modelos quedarian:
+
+Estatura = -83.68 + 94.66E + 11.124SexoM + -13.511Estatura:SexoM
+
+
+
+#### 2.2.2 Validala significancia de β̂i con un alfa de 0.03 (incluye las hipótesis que pruebas)
+
+$\beta_0$ tiene un valor T absoluto de  8.59 que es mayor al valor limite T que es de 2.49 y tambien tiene un valor P menor a 0.03, eso significa que si es significativo.
+
+$\beta_1$ tiene un valor T absoluto de 16.092 que es mayor al valor limite de T que es de 2.49 y tambien tiene un valor P menor a 0.03, eso significa que si es significativo
+
+$\beta_2$ tiene un valor T absoluto de 0.744 que es menor al valor limite de T y tambien tiene un valor P mayor a 0.03, eso significa que no es significativo
+
+$\beta_3$ tiene un valor T absoluto de 1.452 que es menor al valor limite de T y tambien tiene un valor P mayor a 0.03, eso significa que no es significativo
+
+#### 2.2.3 Indica cuál es el porcentaje de variación explicada por el modelo.
+
+El porcentaje de variacion es igual a 78.47%
+
+### 2.3. Dibuja el diagrama de dispersión de los datos y la recta de mejor ajuste.
+```{r}
+
+b0 = oModeloNuevo$coefficients[1]
+b1 = oModeloNuevo$coefficients[2]
+b2 = oModeloNuevo$coefficients[3]
+b3 = oModeloNuevo$coefficients[4]
+
+Ym = function(x){b0+b2+b1*x+b3*x} #1.2848 + 0.0052296P - 13.51P
+Yh = function(x){b0+b1*x} # 1.2727097 + 0.0052296P
+colores = c("blue", "pink2")
+plot(oPesoEstatura$Estatura,oPesoEstatura$Peso, data=oPesoEstatura, col=colores[factor(oPesoEstatura$Sexo)],pch=19, ylab="Peso", xlab="Estatura", main="Relacion Peso vs Estatura")
+
+x = seq(1.40,1.80,0.01)
+lines(x, Ym(x), col="pink2", lwd=2)
+lines(x, Yh(x), col="blue", lwd=2)
+```
+
+### 2.4. Interpreta en el contexto del problema cada uno de los análisis que hiciste.
+
+Este modelo no es bueno porque la interseccion de Sexo por Estatura  no es significativo eso significa que en el contexto del problema el mejor modelo es el anterior que realizamos.
+
+
+
+## 3. Interpreta en el contexto del problema:
+### 3.1 ¿Qué información proporciona β̂0 sobre la relación entre la estatura y el peso de hombres y mujeres? Interpreta y compara entre este modelo con los 3 modelos anteriores.
+
+B_0 nos da el valor de Peso cuando la Estatura es 0 y el Sexo es una mujer, aunque esto no tiene mucho sentido cuando la estatura es 0 ya que el modelo esta entrenado sobre estatura mayores a 1.45, con esto dicho no signifique que este mal, solo que al momento de hacer una prediccion dara un mejor resultado mientras la estatura este dentro de un valor "real"/aproximado.
+
+Este valor entre los diferentes modelos tiene un cambio dependiendo del Sexo por eso en este ultimo modelo cuando hacemos la combinacion de ambos tiene un valor absoluto más grande
+
+### 3.2 ¿Cómo interpretas β̂i en la relación entre la estatura y el peso de hombres y mujeres? Interpreta y compara entre este modelo con los 3 modelos anteriores.
+B_1 va a ser el valor que se va a estar sumando(restando en el caso de la formula que tenemos) al valor de B_0 para dar el peso indicado B_1 es tambien multiplicado por la Estatura, ya que siguiendo los datos mientras más Estatura en promedio el peso tambien debe aumentar.
+
+Este valor tiene el mismo uso en todos los modelos
+
+B_2 va a ser el valor que se va a estar restando al valor de B_0 cuando sea Mujer por como fue hecho el modelo en este caso cuando se calcule el peso de una mujer va a tener un valor más bajo al valor de peso que puede dar de un Hombre.
+
+B_3 es la combinacion de Estatura y Sexo, este valor no se encuentra en ninguno de los modelos más que en el ultimo donde se usa esta combinacion para sacar el peso combinando Estatura y Sexo pero al final pudimos identificar que no es significactivo
+
+
+### 3.3 Indica cuál(es) de los modelos probados para la relación entre peso y estatura entre hombres y mujeres consideras que es más apropiado y explica por qué.
+
+El más apropiado es el segundo modelo ya que junta los valores más significativos para dar una predicción del peso más precisa
+
+
+# La Validez del modelo
+
+## 1. Analiza si el (los) modelo(s) obtenidos anteriormente son apropiados para el conjunto de datos. Realiza el análisis de los residuos:
+### 1.1 Normalidad de los residuos
+
+```{r}
+library(nortest)
+ad.test(Modelo2$residuals)
+
+qqnorm(Modelo2$residuals)
+qqline(Modelo2$residuals)
+hist(Modelo2$residuals,freq=FALSE)
+lines(density(Modelo2$residual),col="red")
+curve(dnorm(x,mean=mean(Modelo2$residuals),sd=sd(Modelo2$residuals)), from=-
+20, to=20, add=TRUE, col="blue",lwd=2)
+
+```
+
+
+### 1.2 Verificación de media cero
+```{r}
+t.test(Modelo2$residuals)
+```
+
+### 1.3 Homocedasticidad e independencia
+
+Homocedasticidad:
+```{r}
+library(lmtest)
+bptest(Modelo2)
+
+bgtest(Modelo2)
+```
+
+Independencia:
+
+```{r}
+dwtest(Modelo2)
+gqtest(Modelo2)
+```
+```{r}
+plot(Modelo2$fitted.values,Modelo2$residuals)
+abline(h=0, col="red")
+```
+El Grafico muestra homocedasticidad y simetria
+
+
+## 2. No te olvides de incluir las hipótesis en la pruebas de hipótesis que realices.
+
+En el caso donde nuestra $\alpha$ tiene un valor de 0.05 las hipotesis quedarian
+
+Homocedasticidad:
+El valor de P es menor a Alpha asi que la Hipotesis incial  se rechaza y ademas como la varianza de errores no es constante se mantiene la Hipotesis alternativa/H1.
+
+Independencia:
+El valor de P es menor a Alpha asi que la Hipotesis inicial no se rechaza, así que se identifica que los valores no estan autocorrelacionados
+  
+
+## 3. Interpreta en el contexto del problema cada uno de los análisis que hiciste.
+
+En los analissi que realice se demuestra que los datos tienen independencia, asi que podemos identificar que la independencia podria estar por el valor de sexo, donde dependiendo del sexo los Pesos de Hombres y Mujeres no se autocorrelacionan.
+
+## 4. Utiliza el comando: plot(modelo). Observa las gráficas obtenidas y contesta:
+
+```{r}
+plot(Modelo2)
+```
+
+### 4.1 ¿Cuáles son las diferencias y similitudes de estos gráficos con respecto a los que ya habías analizado?
+
+Las grafica de QQPlot quedan iguales, mientras que las graficas de residuos tienen la linea roja un poco más distorisionada en esta ultima grafica
+
+### 4.2 Estos gráficos, ¿cambian en algo las conclusiones que ya habías obtenido?
+
+No cambian las conclusiones que habia obtenido.
+
+## 5 Emite una conclusión final sobre el mejor modelo de regresión lineal  que conjunte lo que hiciste en las tres partes de esta actividad.
+
+Al final como ya habiamos identificado el mejor modelo para regresión lineal es el Modelo 2, ya que podemos ver por las graficas de residuos muestra homocedasticidad y simetria, ademas que la grafica de QQPlot muestra que los datos estan Normalizados.
+
+# Intervalos de confianza
+
+## 1. Con los datos de las estaturas y pesos de los hombres y las mujeres construye la gráfica de los intervalos de confianza y predicción para la estimación y predicción de Y para el mejor modelo seleccionado.
+
+```{r}
+
+
+Ip=predict(object=Modelo2,interval="prediction",level=0.97)
+M2=cbind(oPesoEstatura,Ip)
+M2H = subset(M2, Sexo=="H")
+M2M = subset(M2, Sexo=="M")
+
+```
+
+
+Hombres:
+```{r}
+
+library(ggplot2)
+ggplot(M2H,aes(x=Estatura,y=Peso))+
+geom_point()+
+geom_line(aes(y=lwr), color="red", linetype="dashed")+
+geom_line(aes(y=upr), color="red", linetype="dashed")+
+geom_smooth(method=lm, formula=y~x, se=TRUE, level=0.97, col="blue", fill="pink2")+
+theme_light()
+```
+Mujeres:
+```{r}
+
+library(ggplot2)
+ggplot(M2M,aes(x=Estatura,y=Peso))+
+geom_point()+
+geom_line(aes(y=lwr), color="red", linetype="dashed")+
+geom_line(aes(y=upr), color="red", linetype="dashed")+
+geom_smooth(method=lm, formula=y~x, se=TRUE, level=0.97, col="blue", fill="pink2")+
+theme_light()
+```
+## 2. Interpreta y comenta los resultados obtenidos
+
+Por las graficas podemos identificar las predicciones que se realizan sobre Hombres y Mujeres, donde en la grafica de hobres los intervalos de prediccion quedan dentro de todos los datos mientras que en las mujeres quedan algunos datos atipicos fuera de los intervalos de prediccion.

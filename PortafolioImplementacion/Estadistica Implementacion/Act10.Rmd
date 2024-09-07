@@ -1,0 +1,143 @@
+---
+title: "10. Regresión Lineal"
+author: "Eliezer Cavazos"
+date: "2024-08-30"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+	
+Analiza la base de datos de estatura y peso de los hombres y mujeres en México y obten el mejor modelo de regresión para esos datos.
+
+```{r}
+oPesoEstatura = read.csv("C:\\Users\\eliez\\OneDrive\\Desktop\\Clases\\Estatura-peso_HyM.csv") #leer la base de datos
+
+oMujeres = subset(oPesoEstatura,oPesoEstatura$Sexo=="M")
+oHombres = subset(oPesoEstatura,oPesoEstatura$Sexo=="H")
+
+M1=data.frame(oHombres$Estatura,oHombres$Peso,oMujeres$Estatura,oMujeres$Peso)
+
+```
+
+
+# La recta de mejor ajuste (Primera entrega)
+
+## Analisis Descriptivo
+### Obtén la matriz de correlación de los datos que se te proporcionan. Interpreta.
+
+```{r}
+
+cor(M1)
+
+```
+
+
+### Obtén medidas (media, desviación estándar, etc) que te ayuden a analizar los datos.
+```{r}
+n=4 #número de variables
+d=matrix(NA,ncol=7,nrow=n)
+for(i in 1:n){
+  d[i,]<-c(as.numeric(summary(M1[,i])),sd(M1[ ,i]))
+}
+m=as.data.frame(d)
+row.names(m)=c("H-Estatura","H-Peso","M-Estatura","M-Peso")
+names(m)=c("Minimo","Q1","Mediana","Media","Q3","Máximo","Desv Est")
+m
+```
+
+**boxplot**
+
+## La recta de mejor ajuste
+### Encuentra la ecuación de regresión de mejor ajuste:
+
+Hombres:
+```{r}
+ModeloHombres = lm(oHombres$Peso ~ oHombres$Estatura, oHombres)
+
+ModeloHombres
+summary(ModeloHombres)
+```
+Hipotesis:
+- $H_0: \beta_1 = 0$
+- $H_1: \beta_1 \neq 0$
+
+Mujeres:
+```{r}
+ModeloMujeres = lm(oMujeres$Peso ~ oMujeres$Estatura, oMujeres)
+ModeloMujeres
+summary(ModeloMujeres)
+```
+
+
+### Realiza la regresión entre las variables involucradas
+
+Hipotesis:
+- $H_0: \beta_1 = 0$
+- $H_1: \beta_1 \neq 0$
+
+
+Hombres:
+```{r}
+plot(oHombres$Estatura, oHombres$Peso, col="blue", main="Estatus vs Peso Hombres")
+abline(ModeloHombres, col="red")
+
+```
+
+Mujeres:
+```{r}
+plot(oMujeres$Estatura, oMujeres$Peso, col="pink2",main="Estatus vs Peso Mujeres")
+abline(ModeloMujeres, col="red")
+
+```
+
+## Verificacion del modelo:
+### Verifica la significancia del modelo con un alfa de 0.03.
+### Verifica la significancia de β̂i con un alfa de 0.03.
+### Verifica el porcentaje de variación explicada por el modelo
+
+Hombres: 
+```{r}
+Modelo2 = lm(Peso~Estatura+Sexo, oPesoEstatura)
+
+summary(Modelo2)
+```
+A 0.05 si es significativo y los modelos quedarian:
+
+Mujeres:
+Estatura = -72.56 + 81.15E
+Estatura = -74.7546 + 89.2604E + -10.5645SexoM
+Estatura = -85.3191 + 0.0052296E
+
+Hombres:
+Estatura = -72.56 + 81.15E
+Estatura = -74.7546 + 89.2604E + -10.5645SexoM
+Estatura = -74.7546 + 89.2604E
+
+### Dibuja el diagrama de dispersión de los datos y la recta de mejor ajuste.
+```{r}
+
+b0 = Modelo2$coefficients[1]
+b1 = Modelo2$coefficients[2]
+b2 = Modelo2$coefficients[3]
+
+Ym = function(x){b0+b2+b1*x} #1.2848 + 0.0052296P
+Yh = function(x){b0+b1*x} # 1.2727097 + 0.0052296P
+colores = c("blue", "pink2")
+plot(oPesoEstatura$Estatura,oPesoEstatura$Peso, data=oPesoEstatura, col=colores[factor(oPesoEstatura$Sexo)],pch=19, ylab="Peso", xlab="Estatura", main="Relacion Peso vs Estatura")
+
+x = seq(1.40,1.80,0.01)
+lines(x, Ym(x), col="pink2", lwd=2)
+lines(x, Yh(x), col="blue", lwd=2)
+```
+
+
+### Interpreta en el contexto del problema cada uno de los análisis que hiciste.
+En los anlisis se identifico la relacion del Peso por Estatura tanto en Hombres como Mujeres para poder generar un modelo de regresión lineal y asi poder realizar predicciones para identificar Peso por Estatura
+### Interpreta en el contexto del problema:
+### ¿Qué información proporciona β̂0 sobre la relación entre la estatura y el peso de hombres y mujeres?
+B_0 nos da el valor de Peso cuando la Estatura es 0 y el Sexo es una mujer, aunque esto no tiene mucho sentido cuando la estatura es 0 ya que el modelo esta entrenado sobre estatura mayores a 1.45, con esto dicho no signifique que este mal, solo que al momento de hacer una prediccion dara un mejor resultado mientras la estatura este dentro de un valor "real"/aproximado.
+### ¿Cómo interpretas β̂1 en la relación entre la estatura y el peso de hombres y mujeres?
+B_1 va a ser el valor que se va a estar sumando(restando en el caso de la formula que tenemos) al valor de B_0 para dar el peso indicado B_1 es tambien multiplicado por la Estatura, ya que siguiendo los datos mientras más Estatura en promedio el peso tambien debe aumentar.

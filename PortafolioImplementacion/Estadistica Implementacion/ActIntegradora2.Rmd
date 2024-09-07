@@ -1,0 +1,322 @@
+---
+title: "Act. Integradora 2"
+author: "Eliezer Cavazos"
+date: "2024-09-06"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Una empresa automovilística china aspira a entrar en el mercado estadounidense. Desea establecer allí una unidad de fabricación y producir automóviles localmente para competir con sus contrapartes estadounidenses y europeas. Contrataron una empresa de consultoría de automóviles para identificar los principales factores de los que depende el precio de los automóviles, específicamente, en el mercado estadounidense, ya que pueden ser muy diferentes del mercado chino. Esencialmente, la empresa quiere saber:
+
+
+- Qué variables son significativas para predecir el precio de un automóvil
+- Qué tan bien describen esas variables el precio de un automóvil
+Con base en varias encuestas de mercado, la consultora ha recopilado un gran conjunto de datos de diferentes tipos de automóviles en el mercado estadounidense que presenta en el siguiente archivo . Las variables recopiladas vienen descritas en el diccionario de términos diccionario de términos. 
+
+Por un análisis de correlación, la empresa automovilistica tiene interés en analizar las variables agrupadas de la siguiente forma para hacer el análisis de variables significativas:
+
+Selecciona uno de los tres grupos analizados (te será asignado por tu profesora) y analiza la significancia de las variables para predecir o influir en la variable precio. ¿propondrías una nueva agrupación a la empresa automovilísitica?
+
+Primer grupo. Distancia entre los ejes (wheelbase), tipo de gasolina que usa y caballos de fuerza
+
+```{r}
+oPreciosAutos = read.csv("C:\\Users\\eliez\\OneDrive\\Desktop\\Clases\\precios_autos.csv") #leer la base de datos
+
+
+
+
+#oRear = subset(oPreciosAutos,oPreciosAutos$enginelocation=="rear")
+
+
+M1 = data.frame(oPreciosAutos$wheelbase, oPreciosAutos$horsepower, oPreciosAutos$price)#
+#M1$fueltype_num <- ifelse(M1$oPrecioAutos.fueltype == "diesel", 1, 0)
+oDiesel = subset(oPreciosAutos,oPreciosAutos$fueltype=="diesel")
+oGas = subset(oPreciosAutos,oPreciosAutos$fueltype=="gas")
+#M1$fueltype[M1$fueltype == "gas"] = 1
+#M1$fueltype[M1$fueltype == "rear"] = 0
+
+```
+
+# Exploración de la base de datos
+## 1. Exploración de la base de datos
+### 1.1 Calcula medidas estadísticas apropiadas para las variables:
+
+#### 1.1.1 cuantitativas (media, desviación estándar, cuantiles, etc)
+```{r}
+summary(M1)
+```
+
+#### 1.1.2 cualitativas: cuantiles, frecuencias (puedes usar el comando table o prop.table)
+```{r}
+prop.table(M1)
+```
+
+### 1.2 Analiza la correlación entre las variables (analiza posible colinealidad entre las variables)
+```{r}
+cor(M1)
+```
+
+### 1.3 Explora los datos usando herramientas de visualización (si lo consideras necesario):
+Variables cuantitativas:
+- Boxplot (visualización de datos atípicos)
+```{r}
+boxplot(M1$oPreciosAutos.wheelbase, col="lightblue", main="Wheelbase")
+boxplot(M1$oPreciosAutos.horsepower, col="lightgreen", main="Horsepower")
+```
+- Histogramas
+```{r}
+hist(M1$oPreciosAutos.wheelbase, main="Grafica Wheelbase")
+hist(M1$oPreciosAutos.horsepower, main="Grafica HorsePower")
+```
+
+Variables categóricas
+- Distribución de los datos (diagramas de barras, diagramas de pastel)
+```{r}
+barplot(table(oPreciosAutos$fueltype), main="Frecuencia de tipo de combustible", xlab="Tipo de combustible", ylab="Frecuencia")
+```
+
+- Boxplot por categoría de las variables cuantitativas
+
+```{r}
+boxplot(oPreciosAutos$price ~ oPreciosAutos$fueltype  ,oPreciosAutos, col = 2:5, horizontal=TRUE)
+abline(v = mean(oPreciosAutos$price), lty = 3, col = "red")
+```
+
+
+## 2. Modelación y verificación del modelo
+### 2.1 Encuentra la ecuación de regresión de mejor ajuste. Propón al menos 2 modelos de ajuste para encontrar la mejor forma de ajustar la variable precio.
+```{r}
+ModeloA = lm(price~wheelbase*fueltype, oPreciosAutos)
+
+ModeloB = lm(price~horsepower*fueltype, oPreciosAutos)
+
+```
+
+
+### 2.2 Para cada uno de los modelos propuestos:
+### 2.2.1 Realiza la regresión entre las variables involucradas 
+```{r}
+summary(ModeloA)
+plot(oPreciosAutos$wheelbase, oPreciosAutos$price, col="blue", main="Precio vs WheelBase")
+abline(ModeloA, col="red")
+```
+```{r}
+summary(ModeloB)
+plot(oPreciosAutos$horsepower,oPreciosAutos$price, col="blue", main="Precio vs HorsePower")
+abline(ModeloB, col="red")
+```
+
+### 2.2.2 Analiza la significancia del modelo:
+#### 2.2.2.1 Valida la significancia del modelo con un alfa de 0.04 (incluye las hipótesis que pruebas y el valor frontera)
+
+** Modelo A **
+```{r}
+iNModeloA = length(ModeloA)
+
+cat("Valor T limite: ", abs( qt(0.04/2,(iNModeloA-2) ) ))
+print(" ")
+ModeloA$coefficients
+```
+
+A 0.04 no es significativo y el modelo quedaria: 
+
+Precio = -75668.30 + 876.57303WB + 11386.91GAS + -89.18525WB:GAS
+
+** Modelo B **
+```{r}
+iNModeloB = length(ModeloB)
+
+cat("Valor T limite: ", abs( qt(0.04/2,(iNModeloB-2) ) ))
+print(" ")
+ModeloB$coefficients
+```
+
+A 0.04 no es significativo y el modelo quedaria: 
+
+Precio = -7731.3655 + 279.0943HP + 3016.8270GAS + -112.3606HP:GAS
+
+Al ver que ningun modelo es significativo genero un nuevo modelo solo usando los valores significativos como el wheelbase y horsepower
+
+```{r}
+ModeloNuevo = lm(price~wheelbase+horsepower, oPreciosAutos)
+summary(ModeloNuevo)
+```
+```{r}
+iNModeloNuevo = length(ModeloNuevo)
+
+cat("Valor T limite: ", abs( qt(0.04/2,(iNModeloNuevo-2) ) ))
+print(" ")
+ModeloNuevo$coefficients
+```
+Los valores quedaron más arriba que el valor limite de t a 0.04 asi que al final este seria el mejor modelo
+
+PrecioHP = -44998.3110 + 139.4247HP 
+PrecioWB = -44998.3110 + 443.0948WB 
+
+#### 2.2.2.2 Valida la significancia de β̂i con un alfa de 0.04 (incluye las hipótesis que pruebas y el valor frontera de cada una de ellas)
+
+$\beta_0$ tiene un valor T absoluto de 9.559 que es mayor al valor limite T que es de 2.35 y tambien tiene un valor P menor a 0.04, eso significa que si es significativo.
+
+$\beta_1$ tiene un valor T absoluto de 8.894 que es mayor al valor limite de T que es de 2.35 y tambien tiene un valor P menor a 0.04, eso significa que si es significativo
+
+$\beta_2$ tiene un valor T absoluto de 18.379 que es mayor al valor limite de T que es de 2.35 y tambien tiene un valor P menor a 0.04, eso significa que si es significativo
+
+#### 2.2.2.3 Indica cuál es el porcentaje de variación explicada por el modelo.
+
+El porcentaje de variacion es igual a 75.07%
+
+#### 2.2.2.4 Dibuja el diagrama de dispersión de los datos por pares y la recta de mejor ajuste.
+
+```{r}
+b0 = ModeloNuevo$coefficients[1]
+b1 = ModeloNuevo$coefficients[2]
+b2 = ModeloNuevo$coefficients[3]
+
+Yhp = function(x){b0+b2*x} 
+Ywb = function(x){b0+b1*x} 
+colores = c("blue")
+plot(oPreciosAutos$horsepower,oPreciosAutos$Precio, data=oPreciosAutos, pch=19, ylab="Precio", xlab="Wheelbase/Horsepower", main="Relacion Precio vs Wheelbase y Horsepower")
+
+x = seq(0,200,0.01)
+lines(x, Yhp(x), col="blue", lwd=2)
+```
+
+
+#### 2.2.2.5 Interpreta en el contexto del problema cada uno de los análisis que hiciste.
+
+De los analisis pude identificar cual era el mejor modelo en base a mis vairables y de ahi pude identificar que las variables más significativas son HorsePower y Wheelbase podria haber generado el modelo en base solo a HorsePower pero me parecio más interesante usar las dos variables.
+
+### 2.3 Analiza la validez de los modelos propuestos:
+#### 2.3.1 Normalidad de los residuos
+```{r}
+library(nortest)
+ad.test(ModeloNuevo$residuals)
+
+qqnorm(ModeloNuevo$residuals)
+qqline(ModeloNuevo$residuals)
+hist(ModeloNuevo$residuals,freq=FALSE)
+lines(density(ModeloNuevo$residual),col="red")
+curve(dnorm(x,mean=mean(ModeloNuevo$residuals),sd=sd(ModeloNuevo$residuals)), from=-
+20, to=20, add=TRUE, col="blue",lwd=2)
+```
+
+#### 2.3.2 Verificación de media cero
+```{r}
+t.test(ModeloNuevo$residuals)
+```
+
+#### 2.3.3 Homocedasticidad, linealidad e independencia
+Homocedasticidad:
+```{r}
+library(lmtest)
+bptest(ModeloNuevo)
+
+bgtest(ModeloNuevo)
+```
+Independencia:
+
+```{r}
+dwtest(ModeloNuevo)
+gqtest(ModeloNuevo)
+```
+Linealidad:
+```{r}
+resettest(ModeloNuevo)
+```
+
+#### 2.3.4 Interpreta cada uno de los analisis que realizaste
+
+Ninguno de los modelos contiene Homocedasticidad, Independencia y Linealidad, ademas que la normalidad de residuos tiene un valor P menor a 0.04.
+
+### 2.4 Emite una conclusión final sobre el mejor modelo de regresión lineal y contesta la pregunta central:
+#### 2.4.1 Concluye sobre el mejor modelo que encontraste y argumenta por qué es el mejor
+El mejor modelo es el ModeloNuevo que genere ya que tiene más significancia que los otros modelos donde use fueltype, donde no tenia nada de correlacion, pero al usar las variables de HorsePower y Wheelbase
+
+#### 2.4.2 ¿Cuáles de las variables asignadas influyen en el precio del auto? ¿de qué manera lo hacen
+
+Las variables que influyen son los valores de horsepower y wheelbase donde mientras más horsepower se tenga más aumenta el precio, igual que el wheelbase.
+
+## 3. Intervalos de predicción y confianza
+### 3.1 Con los datos de las variables asignadas construye la gráfica de los intervalos de confianza y predicción para la estimación y predicción del precio para el mejor modelo seleccionado:
+#### 3.1.1 Calcula los intervalos para la variable Y
+
+```{r}
+
+Ip=predict(object=ModeloNuevo,interval="prediction",level=0.96)
+M2=cbind(oPreciosAutos,Ip)
+M2g = subset(M2, fueltype == "gas")
+M2d = subset(M2, fueltype == "diesel")
+```
+
+#### 3.1.2 Selecciona la categoría de la variable cualitativa que, de acuerdo a tu análisis resulte la más importante, y separa la base de datos por esa variable categórica.
+
+```{r}
+library(ggplot2)
+ggplot(M2g,aes(x= horsepower ,y= price))+
+  ggtitle("Relacion Precio y Horsepower en Carros de gas")+
+  geom_point()+
+  geom_line(aes(y=lwr), color="red", linetype="dashed")+
+  geom_smooth(aes(y=upr), color="red", linetype="dashed")+
+  geom_smooth(method=lm, formula=y~x, se=TRUE, level=0.96, col="blue", fill="pink2")+
+  theme_light()
+```
+
+```{r}
+library(ggplot2)
+ggplot(M2d,aes(x= horsepower ,y= price))+
+  ggtitle("Relacion Precio y Horsepower en Carros de Diesel")+
+  geom_point()+
+  geom_line(aes(y=lwr), color="red", linetype="dashed")+
+  geom_smooth(aes(y=upr), color="red", linetype="dashed")+
+  geom_smooth(method=lm, formula=y~x, se=TRUE, level=0.96, col="blue", fill="pink2")+
+  theme_light()
+```
+
+#### 3.1.3 Grafica por pares de variables numéricas
+```{r}
+library(ggplot2)
+ggplot(M2g,aes(x= horsepower+wheelbase ,y= price))+
+  ggtitle("Relacion Precio y Horsepower y WheelBase en Carros de gas")+
+  geom_point()+
+  geom_line(aes(y=lwr), color="red", linetype="dashed")+
+  geom_smooth(aes(y=upr), color="red", linetype="dashed")+
+  geom_smooth(method=lm, formula=y~x, se=TRUE, level=0.96, col="blue", fill="pink2")+
+  theme_light()
+```
+
+```{r}
+library(ggplot2)
+ggplot(M2d,aes(x= horsepower+wheelbase ,y= price))+
+  ggtitle("Relacion Precio y Horsepower y WheelBase en Carros de Diesel")+
+  geom_point()+
+  geom_line(aes(y=lwr), color="red", linetype="dashed")+
+  geom_smooth(aes(y=upr), color="red", linetype="dashed")+
+  geom_smooth(method=lm, formula=y~x, se=TRUE, level=0.96, col="blue", fill="pink2")+
+  theme_light()
+```
+### 3.2 Puedes hacer el mismo análisis para otra categoría de la variable cualitativa, pero no es necesario, bastará con que justiques la categoría seleccionada anteriormente.
+### 3.3 Interpreta en el contexto del problema
+
+En mis predicciones puedo identificar que la mayoria de datos estan dentro de los intervalos de confianza, tambien se puede identificar la relacion de horsepower y wheelbase con el precio donde mientras estos aumenten el precio tambien lo hace.
+
+
+## 4. Más allá:
+### 4.1 Contesta la pregunta referida a la agrupación de variables que propuso la empresa para el análisis: ¿propondrías una nueva agrupación de las variables a la empresa automovilísitica?
+
+Si propondria una agrupacion de las variables de Horsepower y Wheelbase ya que tienen significancia con el valor de precio. 
+
+### 4.2 Retoma todas las variables y haz un análisis estadístico muy leve (medias y correlación) de cómo crees que se deberían agrupar para analizarlas.
+
+```{r}
+quantitative_data = oPreciosAutos[, c('wheelbase', 'carlength', 'carwidth', 'carheight', 'enginesize', 
+                          'stroke', 'compressionratio', 'horsepower', 'peakrpm', 
+                          'citympg', 'highwaympg', 'price')]
+cor(quantitative_data)
+```
+Las variables que se deberian agrupar son horsepower y enginesize ya que son las variables que más correlacion tienen con el precio.
+
+
+
