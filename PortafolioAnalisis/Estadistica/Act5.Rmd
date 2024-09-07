@@ -1,0 +1,219 @@
+---
+title: "Act5"
+author: "Eliezer Cavazos"
+date: "2024-08-14"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+oMcDonalds = read.csv("C:\\Users\\eliez\\OneDrive\\Desktop\\Clases\\mc-donalds-menu.csv") #leer la base de datos
+
+```
+
+
+## Box-Cox
+```{r}
+M1 = oMcDonalds$Sugars
+
+library(MASS)
+bc<-boxcox((M1+1)~1)
+lambdaSugar=bc$x[which.max(bc$y)]
+
+lambdaSugar #Lambda
+```
+
+## 2. Ecuaciones de los modelos
+
+Cal1 = $\sqrt{x+1}$
+Cal2 = $\frac{(x+1)^.2626263 - 1}{0.2626263}$
+
+
+## 3.Analisis Normalidad
+```{r}
+
+#M2=subset(M1,M1>0)
+par(mfrow=c(2,1))
+boxplot(M1, horizontal = TRUE,col="pink", main="Azucares de los alimentos en
+McDonalds")
+#boxplot(M2, horizontal = TRUE,col="green", main="Calorias de los alimentos en
+#McDonalds sin ceros")
+
+
+```
+
+## 3.1 Comparar las medidas
+```{r}
+library(nortest)
+library(e1071)
+
+cal1=sqrt(M1+1)
+cal2=((M1+1)^lambdaSugar-1)/lambdaSugar
+
+D0=ad.test(M1)
+D1=ad.test(cal1)
+D2=ad.test(cal2)
+
+m0=round(c(as.numeric(summary(M1)),kurtosis(M1),skewness(M1),D0$p.value),3)
+m1=round(c(as.numeric(summary(cal1)),kurtosis(cal1),skewness(cal1),D1$p.value),3)
+m2=round(c(as.numeric(summary(cal2)),kurtosis(cal2),skewness(cal2),D2$p.value),3)
+
+m<-as.data.frame(rbind(m0,m1,m2))
+row.names(m)=c("Original","Primer modelo","Segundo Modelo")
+names(m)=c("Minimo","Q1","Mediana","Media","Q3","Máximo","Curtosis","Sesgo","Valor p")
+
+m
+```
+## 3.2 Histograma
+
+```{r}
+par(mfrow=c(3,1))
+hist(cal1,col=0,main="Histograma de Azucar 1")
+hist(cal2,col=0,main="Histograma de Azucar 2")
+hist(M1,col=0,main="Histograma de Azucar")
+```
+
+## 3.3 Prueba Normalidad Anderson-Darling
+```{r}
+print("Transformacion 1")
+ad.test(cal1)
+print("Transformacion 2")
+ad.test(cal2)
+print("Original")
+ad.test(M1)
+```
+## 4 Anomalias
+Se limpian los ceros para que Box-Cox Funcione
+```{r}
+M2=subset(M1,M1>0)
+par(mfrow=c(2,1))
+boxplot(M1, horizontal = TRUE,col="pink", main="Azucares de los alimentos en
+McDonalds")
+boxplot(M2, horizontal = TRUE,col="green", main="Azucares de los alimentos en
+McDonalds sin ceros")
+
+
+```
+
+## 5. Encuentra Valor Lambda
+```{r}
+bc<-boxcox(M2~1)# agarra calorias
+lambdaSugar=bc$x[which.max(bc$y)]
+
+lambdaSugar #Lambda
+```
+
+## 5. Yeo Johnson
+
+```{r}
+library(VGAM)
+
+cal1=sqrt(M2+1)
+
+cal3<- yeo.johnson(M2, lambda = lambdaSugar)
+hist(cal3,col=0,main="Histograma de Yeo Johnson")
+hist(cal1,col=0,main="Histograma Original")
+
+```
+```{r}
+library(VGAM)
+lp <- seq(0,1,0.001) # Valores de lambda propuestos
+nlp <- length(lp)
+n=length(M2)
+D <- matrix(as.numeric(NA),ncol=2,nrow=nlp)
+d <-NA
+for (i in 1:nlp){
+d= yeo.johnson(M2, lambda = lp[i])
+p=ad.test(d)
+D[i,]=c(lp[i],p$p.value)}
+
+
+N=as.data.frame(D)
+
+plot(N$V1,N$V2, type="l",
+col="darkred", lwd=3,
+xlab="Lambda",
+ylab="Valor p (Normalidad)")
+
+
+```
+
+## Lambda que maximiza el valor de P
+```{r}
+G=data.frame(subset(N,N$V2==max(N$V2)))
+G
+```
+## 6. Escribe la ecuación del modelo encontrado.
+
+Cal2 = $\frac{(x+1)^.314 - 1}{0.314}$
+
+## 7.1 Comparar Medidas
+```{r}
+lambdaSugar = 0.314	
+
+cal1=sqrt(M2+1)
+cal3=((M2+1)^lambdaSugar-1)/lambdaSugar
+
+D0=ad.test(M2)
+D1=ad.test(cal1)
+D3=ad.test(cal3)
+
+m0=round(c(as.numeric(summary(M2)),kurtosis(M2),skewness(M2),D0$p.value),3)
+m1=round(c(as.numeric(summary(cal1)),kurtosis(cal1),skewness(cal1),D1$p.value),3)
+m3=round(c(as.numeric(summary(cal3)),kurtosis(cal3),skewness(cal3),D1$p.value),3)
+
+m<-as.data.frame(rbind(m0,m1,m2))
+row.names(m)=c("Original","Primer modelo","Nuevo modelo")
+names(m)=c("Minimo","Q1","Mediana","Media","Q3","Máximo","Curtosis","Sesgo","Valor p")
+
+m
+
+```
+## 7.2 Histograma Modelos Obtenidos
+```{r}
+par(mfrow=c(3,1))
+hist(cal1,col=0,main="Histograma de Azucar 1")
+hist(cal3,col=0,main="Histograma de Azucar 3")
+hist(M1,col=0,main="Histograma de Azucar")
+```
+
+## 7.3 Prueba de Normalidad de Anderson-Darling
+
+```{r}
+print("Transformacion 1")
+ad.test(cal1)
+print("Transformacion 3")
+ad.test(cal3)
+print("Original")
+ad.test(M2)
+```
+
+## 8. Definir mejor transoformacion
+
+Pude identificar que la mejor transformación para el caso de los datos que hay de McDonald's es la transformación de Box-Cox, ya que con base en las necesidades y que los datos de la columna de Azúcares no contienen valores negativos hace que no se necesite una transformación tan Robusta como la de Yeo Johnson y quede mejor usar Box-Cox, aunque en este caso en los dos casos salio un valor P muy pequeño despues de las transformaciones eso significa que tal vez se necesite una diferente transformación para este caso
+
+## 9. Ventajas y Desventajes de los modelos de Box Cox y de Yeo Johnson.
+
+Ventajas Box-Cox:
+- Cuando no se tiene un valor de lambda
+- Útil cuando la variabilidad de Y cambia como una función de X.
+Desventajas Box-Cox:
+- Solo acepta numeros positivos
+
+Ventajas Yeo Johnson:
+- Mas robusto que Box-Cox
+- Acepta valores positivos, negativos y Cero
+Desventajas Yeo Johnson:
+- Es una extension de Box-Cox 
+
+## 10.1 3 diferencias  entre lo que es la transformación y el escalamiento de los datos
+
+1. El escalamiento de datos se encarga de que cada variable de nuestro set tenga el mismo rango de valores
+2. La transformacion cambia la distribución de los datos
+3. La transformacion es utilizada para corregir sesgos o estabilizar la varianza
+
+## 10.2 Indica cuando es necesario utilizar cada uno
+La transformacion se usa cuando queremos cambiar la distribucion de los datos por ejemplo de una no normalizada a una distribucion normalizada, mientra que el escalamiento de los datos se encarga de mantener el mismo rango de valores en nuestro set de datos
