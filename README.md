@@ -1,13 +1,15 @@
 ## Eliezer Cavazos Rochin | A00835194
+### Portafolio Analisis
+Las actividades que se pueden encontrar en esta carpeta son:
+-  "Estadistica Implementacion" (Act1-Act6, ActIntegradora)
+-  "Momento de Retroalimentación: Reto Análisis del contexto y la normatividad"
 
-### Estadistica
-Las actividades de estadistica que se realizaron durante este periodo se encuentran en las carpetas de 
-- Portafolio Analisis/"Estadistica Implementacion" (Act1-Act6, ActIntegradora)
+### Portafolio Implementacion
+Las actividades que se pueden encontrar en esta carpeta son:
 - Portafolio Implementacion/Estadistica (Act7-Act12, ActIntegradora2)
 
-### Machine Learning
-
-Los Challenge de Machine Learning se encuentran en la carpeta de PortafolioML en este documento se va a encontrar una carpeta por cada Challenge
--  Challenge
--  Challenge2
--  Challenge3
+### Portafolio ML
+Las actividades que pueden encontrar en esta carpeta son:
+-  Challenge_MachineLearning
+-  Challenge2_MachineLearning
+-  Challenge3_MachineLearning
