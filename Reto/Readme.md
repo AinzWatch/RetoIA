@@ -1,6 +1,8 @@
 Dentro de este repositorio se encuentran nuestros avances y hallazgos sobre el reto del titanic
 Dentro de las ramas se encuentran las actividades individuales hechas por el integrante cuya rama tiene su nombre
 Documentos en la carpeta de Reto
+
+
 PrediccionTitanic_V_Final.ipynb 
 Libreta final donde se encuentra Analisis(Indices, Datos Vacios), Limpieza y Transformacion de los datos, ademas de mostrar todos los modelos que hicimos (Clasificacion, Arbol Decision, Bosque Aleatorio, Redes Neuronales) y como los entrenamos mediante iteraciones
 
