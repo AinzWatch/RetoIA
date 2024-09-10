@@ -10,3 +10,4 @@ Challenge 2
 
 Challenge 3
 - Version 1 - Version Inicial
+- Version 2 - Se cambio la semilla inicial a solo los ultimos 4 digitos, se mejoro la explicacion sobre el overfit, underfit, ademas de hacer analisis del sesgo
