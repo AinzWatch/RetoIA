@@ -1,0 +1,2 @@
+Este es el portafolio de implementacion en donde se encuentran las actividades de estadistica de la 6 a 12 junto con la actividad integradora. Ademas contiene el challenge 1 el cual es sin uso del framework los files correspondientes a este son los de ChallengeCorreciones.pdf y ChallengeCorreciones.ipynb.
+En estos se corrijio que se entrenara el modelo con los datos de train y que se hagan las pruebas con test 
