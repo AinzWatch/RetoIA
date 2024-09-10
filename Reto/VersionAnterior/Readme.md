@@ -4,7 +4,7 @@ En esta carpete se encuebtran las versiones anteriores de los codigos que llegam
 * ClasificacionTitanic.ipynb 
 En este archivo se encuentran algunos modelos y semillas que nos dieron buenos resultados (0.75) en Kaggle, asi como comparaciones con otros modelos que hemos realizado, usando la matriz de confusion para medir resultados.
 
-* Momento de retroalimentacion_ reto limpieza de conjuntos de datos
+* Momento de Retroalimentación_ Reto Limpieza del Conjunto de Datos.pdf
 Investigacion base sobre la situacion problema del reto, en donde se investigaron y analizaron la base de datos para poder comprender los elementos que la conformaban, y el posterior analisis de los posibles metodos para la solucion del proyecto.
 
 * Titanic_SP.ipynb 
