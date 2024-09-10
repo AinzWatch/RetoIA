@@ -1,0 +1,1 @@
+Este es el Portafolio de analisis en donde se encuentran las actividades de la 1 a la 5 junto con la primera actividad integradora de estadistica y el ensayo correjido . Ademas se encuntran los archivos de LaboratorioFrameworkCorrejido.pdf y LaboratorioFrameworkCorrejido.ipynb estos contienen las correrciones del error cuadratico, graficass y explicaciones 
