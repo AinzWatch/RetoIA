@@ -1,0 +1,4 @@
+En esta carpete se encuebtran las versiones anteriores de los codigos que llegamos a usar en el reto el primer codigo que ser observa es el borrador de nuestra limpeiza de datos al igual las primeras pruebas con el modelo de redes neuronales.
+El segundo elemento de la carptea es la documento de la limpeiza de datos, la metodologia que se uso para la limpieza de estos y el como llegamos los datos que usamos apra los modelos finales.
+El tercer elemento es un codigo de python de como rellenamos lo datos daltantes de la columna de edad, en el codigo se ven las pruebas que llgeamos a hacer para encontrar la relacion de las variables con la edad y los distintos metodos que probamos para rellenar los espacios en blanco de la edad.
+Por ultimo se observa un codigo que usamos para la exploracion de los datos para ver como podrias determinar la supervivencia o murete en el titanic.
