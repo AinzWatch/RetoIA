@@ -1,4 +1,4 @@
-En esta carpeta se pueden apreciar todos los elementoos para la solucion del reto titanic 4.0
+En esta carpeta se pueden apreciar todos los elementos para la solucion del reto titanic 4.0
 
 Finalwiwko.zip: 
 Es el proyecto realizado en MIT app inventor, el cual puede apagar o prender el sensor y tambien puede preguntar a gemini el estatus de la temperatura
