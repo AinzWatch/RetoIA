@@ -1,0 +1,295 @@
+---
+title: "13. Regresión no lineal"
+author: "Eliezer Cavazos"
+date: "2024-09-10"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Parte 1: Análisis de normalidad
+
+## 1. Accede a los datos de cars en R (data = cars)
+
+```{r}
+oData = cars
+```
+
+### 1.1 Prueba normalidad univariada de la velocidad y distancia (prueba con dos de las pruebas vistas en clase)
+```{r}
+
+shapiro.test(oData$speed)
+
+
+shapiro.test(oData$dist)
+```
+
+### 1.2 Realiza gráficos que te ayuden a identificar posibles alejamientos de normalidad:
+#### 1.2.1 Los datos y su respectivo QQPlot: qqnorm(datos) y qqline(datos) para cada variable
+
+
+
+#### 1.2.2 Realiza el histograma y su distribución teórica de probabilidad (sugerencia, adapta el código:
+hist(datos,freq=FALSE)
+lines(density(datos),col="red")
+curve(dnorm(x,mean=mean(datos),sd=sd(datos)), from=min(datos), to=max(datos), add=TRUE, col="blue",lwd=2)
+
+Se te sugiere usar par(mfrow=c(1,2)) para graficar el QQ plot y el histograma de una variable en un mismo espacio.
+
+Velocidad:
+```{r}
+
+qqnorm(oData$speed)
+qqline(oData$speed)
+hist(oData$speed, freq=FALSE)
+lines(density(oData$speed), col="red")
+curve(dnorm(x, mean=mean(oData$speed), sd=sd(oData$speed)), from=min(oData$speed), to=max(oData$speed), add=TRUE, col="blue", lwd=2)
+
+
+```
+Distancia: 
+```{r}
+
+qqnorm(oData$dist)
+qqline(oData$dist)
+hist(oData$dist, freq=FALSE)
+lines(density(oData$dist), col="red")
+curve(dnorm(x, mean=mean(oData$dist), sd=sd(oData$dist)), from=min(oData$dist), to=max(oData$dist), add=TRUE, col="blue", lwd=2)
+```
+
+### 1.3 Calcula el coeficiente de sesgo y el coeficiente de curtosis (sugerencia: usar la librería e1071, usar: skeness y kurtosis) para cada variable.
+
+```{r}
+library(e1071)
+print("Velocidad: ")
+skewness(oData$speed)
+kurtosis(oData$speed)
+
+print("Distancia: ")
+skewness(oData$dist)
+kurtosis(oData$dist)
+```
+
+## 2. Comenta cada gráfico y resultado que hayas obtenido. Emite una conclusión final sobre la normalidad de los datos. Argumenta basándote en todos los análisis realizados en esta parte. Incluye posibles motivos de alejamiento de normalidad.
+
+Los resultado obtenidos me dicen que el valor de Velocidad tiene un menor sesgo que distancia, donde el Sesgo de Velocidad es un sesgo a la izquierda, mientras el sesgo de distancia es un sesgo a la derecha, ademas la Distancia contiene más datos atipicos que Velocidad
+
+
+# Parte 2: Regresión lineal
+
+## 1. Prueba regresión lineal simple entre distancia y velocidad. Usa lm(y~x).
+### 1.1 Escribe el modelo lineal obtenido.
+```{r}
+oModelo = lm(dist ~ speed, data=oData)
+summary(oModelo)
+```
+
+### 1.2 Grafica los datos y el modelo (ecuación) que obtuviste.
+```{r}
+plot(oData$speed, oData$dist, main="Regresión lineal: Distancia vs Velocidad", 
+     xlab="Velocidad", ylab="Distancia", pch=19)
+abline(oModelo, col="blue", lwd=2)
+```
+
+## 2. Analiza significancia del modelo: individual, conjunta y coeficiente de determinación. Usa summary(Modelo)
+## 3. Analiza validez del modelo.
+### 3.1 Residuos con media cero
+```{r}
+t.test(oModelo$residuals)
+```
+
+### 3.2 Normalidad de los residuos
+```{r}
+library(nortest)
+ad.test(oModelo$residuals)
+
+qqnorm(oModelo$residuals)
+qqline(oModelo$residuals)
+hist(oModelo$residuals,freq=FALSE)
+lines(density(oModelo$residual),col="red")
+curve(dnorm(x,mean=mean(oModelo$residuals),sd=sd(oModelo$residuals)), from=-
+20, to=20, add=TRUE, col="blue",lwd=2)
+```
+
+### 3.3 Homocedasticidad, independencia y linealidad.
+Homocedasticidad:
+```{r}
+library(lmtest)
+bptest(oModelo)
+
+bgtest(oModelo)
+```
+Independencia:
+
+```{r}
+dwtest(oModelo)
+gqtest(oModelo)
+```
+Linealidad:
+```{r}
+resettest(oModelo)
+```
+
+
+### 3.4 Usa plot(Modelo) para los gráficos y añade pruebas de hipótesis.
+```{r}
+plot(oModelo)
+```
+
+## 4. Grafica los datos y el modelo de la distancia en función de la velocidad.
+```{r}
+# Graficar los datos y el modelo de la distancia en función de la velocidad
+plot(oData$speed, oData$dist, main="Modelo Lineal: Distancia en función de Velocidad",
+     xlab="Velocidad", ylab="Distancia", pch=19)
+abline(oModelo, col="red", lwd=2)
+```
+
+## 5. Comenta sobre la idoneidad del modelo en función de su significancia y validez.
+
+El modelo podria ser mejor si se limpiaran los datos atipicos, ya que podemos saber que si el valor de velocidad si es significativo, pero al tener muchos datos atipicos puede arruinar la calidad del modelo.
+
+
+# Parte 3: Regresión no lineal
+
+## 1. Con el objetivo de probar un modelo no lineal que explique la relación entre la distancia y la velocidad, haz una transformación con la base de datos car que te garantice normalidad en ambas variables (ojo: concentrate solo en la variable que tiene más alejamiento de normalidad).
+
+### 1.1 Encuentra el valor de $\lambda$ en la transformación Box-Cox para el modelo lineal: 
+$Y = \beta_0 + \beta_1$ donde Y sea la distancia y X la velocidad. Aprovecha que el comando de boxcox en R te da la oportunidad de trabajar con el modelo líneal:
+Utiliza: boxcox(lm(Distancia~Velocidad)) si la variable con más alejamiento de normalidad es la distancia
+Utiliza: boxcox(lm(Velocidad~Distancia)) si la variable con más alejamiento de normalidad es la velocidad
+La transformación se hará sobre la variable que usas como dependiente en el comando lm(y~x)
+```{r}
+library(MASS)
+
+# Aplicar la transformación Box-Cox
+oBoxCoxModel = boxcox(lm(dist ~ speed, data=oData), plotit=TRUE)
+
+oLambda <- oBoxCoxModel$x[which.max(oBoxCoxModel$y)]
+oLambda
+
+```
+
+
+### 1.2 Define la transformación exacta y el aproximada de acuerdo con el valor de que encontraste en la transformación de Box y Cox. Escribe las ecuaciones de las dos transformaciones encontradas.
+
+
+Ecu1 = $\sqrt{x+1}$
+Ecu2 = $\frac{(x+1)^{0.4242424} - 1}{0.4242424}$
+
+### 1.3 Analiza la normalidad de las transformaciones obtenidas. Utiliza como argumento de normalidad:
+Compara las medidas: sesgo y curtosis.
+```{r}
+library(nortest)
+library(e1071)
+
+oSpeed = oData$speed
+
+ecu1=sqrt(oSpeed+1)
+ecu2=((oSpeed+1)^oLambda-1)/oLambda
+
+D0=ad.test(oSpeed)
+D1=ad.test(ecu1)
+D2=ad.test(ecu2)
+
+m0=round(c(as.numeric(summary(oSpeed)),kurtosis(oSpeed),skewness(oSpeed),D0$p.value),3)
+m1=round(c(as.numeric(summary(ecu1)),kurtosis(ecu1),skewness(ecu1),D1$p.value),3)
+m2=round(c(as.numeric(summary(ecu2)),kurtosis(ecu2),skewness(ecu2),D2$p.value),3)
+
+m<-as.data.frame(rbind(m0,m1,m2))
+row.names(m)=c("Original","Primer modelo","Segundo Modelo")
+names(m)=c("Minimo","Q1","Mediana","Media","Q3","Máximo","Curtosis","Sesgo","Valor p")
+
+m
+```
+Obten el histograma de los 2 modelos obtenidos (exacto y aproximado) y los datos originales.
+```{r}
+par(mfrow=c(3,1))
+hist(ecu1,col=0,main="Histograma de Velocidad 1")
+hist(ecu2,col=0,main="Histograma de Velocidad 2")
+hist(oSpeed,col=0,main="Histograma de Velocidad")
+```
+
+Realiza algunas pruebas de normalidad para los datos transformados.
+```{r}
+
+print("Transformacion 1")
+ad.test(ecu1)
+print("Transformacion 2")
+ad.test(ecu2)
+print("Original")
+ad.test(oSpeed)
+
+```
+
+### 1.4 Detecta anomalías y corrige tu base de datos tranformado (datos atípicos, ceros anámalos, etc): solo en caso de no tener normalidad en las transformaciones. En caso de corrección de los datos por anomalías, vuelve a buscar la $ \alpha $ para tus nuevos datos.
+
+```{r}
+M2=subset(ecu1, ecu1> 2.5)
+par(mfrow=c(2,1))
+boxplot(oData$speed, horizontal = TRUE,col="pink", main="Velocidad de los carros")
+boxplot(M2, horizontal = TRUE,col="green", main="Velocidad de los carros mayor a 2.5")
+
+
+```
+
+## 2. Concluye sobre las dos transformaciones realizadas: Define la mejor transformación de los datos de acuerdo a las características de las dos transformaciones encontradas (exacta o aproximada). Toman en cuenta la normalidad de los datos y la economía del modelo.
+
+## 3. Con la mejor transformación (punto 2), realiza la regresión lineal simple entre la mejor transformación (exacta o aproximada) y la variable velocidad:
+Escribe el modelo lineal para la transformación.
+```{r}
+oModeloTransformacion = lm( dist ~ ecu1 ,data=oData) # Mejor Transformacion
+```
+
+Grafica los datos y el modelo lineal (ecuación) de la transformación elegida vs velocidad.
+```{r}
+plot(oData$speed, oData$dist, main="Modelo No Lineal: Distancia vs Velocidad",
+     xlab="Velocidad", ylab="Distancia", pch=19)
+abline(oModeloTransformacion, col="red", lwd=2)
+```
+
+Analiza significancia del modelo (individual, conjunta y coeficiente de correlación)
+```{r}
+summary(oModeloTransformacion)
+```
+
+Analiza validez del modelo: normalidad de los residuos, homocedasticidad e independencia. Indica si hay candidatos a datos atípicos o influyentes en la regresión. Usa plot(Modelo) para los gráficos y añade pruebas de hipótesis.
+```{r}
+t.test(oModeloTransformacion$residuals)
+```
+
+```{r}
+
+ad.test(oModeloTransformacion$residuals)
+
+qqnorm(oModeloTransformacion$residuals)
+qqline(oModeloTransformacion$residuals)
+hist(oModeloTransformacion$residuals,freq=FALSE)
+lines(density(oModeloTransformacion$residual),col="red")
+curve(dnorm(x,mean=mean(oModeloTransformacion$residuals),sd=sd(oModeloTransformacion$residuals)), from=-
+20, to=20, add=TRUE, col="blue",lwd=2)
+```
+
+
+Despeja la distancia del modelo lineal obtenido entre la transformación y la velocidad. Obtendrás el modelo no lineal que relaciona la distancia con la velocidad directamente (y no con su transformación).
+Grafica los datos y el modelo de la distancia en función de la velocidad.
+```{r}
+# Graficar los datos y el modelo de la distancia en función de la velocidad
+plot(oData$speed, oData$dist, main="Modelo Lineal: Distancia en función de Velocidad",
+     xlab="Velocidad", ylab="Distancia", pch=19)
+abline(oModelo, col="red", lwd=2)
+```
+# 4. Comenta sobre la idoneidad del modelo en función de su significancia y validez.
+
+El nuevo modelo si normalizo los datos, bajo un poco la significancia de los datos sobre distancia, pero creo yo que tiene que ver porque se quitaron datos eso hizo que bajara la significancia aunque fuera muy poco
+
+
+# Parte 4: Conclusión
+
+## 1. Define cuál de los dos modelos analizados (Punto 1 o Punto 2) es el mejor modelo para describir la relación entre la distancia y la velocidad.
+
+El mejor modelo que identifique es el nuevo modelo con los datos transformados, ya que normalizo los datos e hizo que el modelo fuera de mejor calidad.
+
+## 2. Comenta sobre posibles problemas del modelo elegido (datos atípicos, alejamiento de los supuestos, dificultad de cálculo o interpretación)
+
+Algunos problemas del nuevo modelo son los datos atipicos usando qqplot se puede identificar que se tiene datos atipicos en la mitad de los datos, solo que no encontre como poder limpiarlos para mejorar la transformacion.
