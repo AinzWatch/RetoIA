@@ -6,7 +6,7 @@ Las actividades que se pueden encontrar en esta carpeta son:
 
 ### Portafolio Implementacion
 Las actividades que se pueden encontrar en esta carpeta son:
-- Portafolio Implementacion/Estadistica (Act7-Act12, ActIntegradora2)
+- Portafolio Implementacion/Estadistica (Act7-Act12, ActIntegradora2, Act13)
 
 ### Portafolio ML
 Las actividades que pueden encontrar en esta carpeta son:
