@@ -1,7 +1,7 @@
-Incluye los modulos:
+Lo modulos en esta carpeta son
 
-1. Big Data.	(Vacio)
+Big Data
 	
-5. Estadística avanzada para la ciencia de datos.	(Ya existe en la otra carpeta)
+Estadística avanzada para la ciencia de datos
 	
-4. Cómputo en la nube.	
+Cómputo en la nube	
