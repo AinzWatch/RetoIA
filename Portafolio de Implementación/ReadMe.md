@@ -1,9 +1,9 @@
-Módulo donde se evalúa	
+Los modulos en esta carpeta son
 
-2. Técnicas y arquitecturas de deep learning.	
+Técnicas y arquitecturas de deep learning
 
-3. Herramientas para el procesamiento del lenguaje natural.		
+Herramientas para el procesamiento del lenguaje natural		
 	
-5. Estadística avanzada para la ciencia de datos.	
+Estadística avanzada para la ciencia de datos
 	
 	
